@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Какой ты персонаж на новогодних праздниках?</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        .snowflakes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 20px;
+            animation: fall linear infinite;
+        }
+        
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 2;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 32px;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+        
+        .header .subtitle {
+            color: #888;
+            font-size: 16px;
+        }
+        
+        .progress-container {
+            background: #e0e0e0;
+            height: 10px;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+        
+        .question-container {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .question-container.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .question {
+            font-size: 22px;
+            color: #333;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+        
+        .question-number {
+            color: #764ba2;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .option {
+            padding: 20px;
+            background: #f8f9ff;
+            border: 3px solid transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .option:hover {
+            background: #eef0ff;
+            border-color: #667eea;
+            transform: translateX(10px);
+        }
+        
+        .option.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .option strong {
+            font-size: 20px;
+            margin-right: 10px;
+            color: #764ba2;
+        }
+        
+        .option.selected strong {
+            color: #fff;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-next {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-next:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-next:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-prev {
+            background: #e0e0e0;
+            color: #666;
+        }
+        
+        .btn-prev:hover {
+            background: #d0d0d0;
+        }
+        
+        .result-container {
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .result-container.active {
+            display: block;
+        }
+        
+        .result-emoji {
+            font-size: 100px;
+            margin: 20px 0;
+            animation: bounce 1s ease infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+        
+        .result-title {
+            font-size: 36px;
+            color: #667eea;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        
+        .result-subtitle {
+            font-size: 24px;
+            color: #764ba2;
+            margin-bottom: 20px;
+        }
+        
+        .result-description {
+            background: #f8f9ff;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: left;
+            margin: 20px 0;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+        
+        .result-description p {
+            margin: 10px 0;
+        }
+        
+        .result-description strong {
+            color: #764ba2;
+        }
+        
+        .share-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f0f0f0;
+            border-radius: 12px;
+        }
+        
+        .share-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .btn-restart {
+            background: linear-gradient(135deg, #764ba2, #667eea);
+            color: white;
+            margin-top: 20px;
+        }
+        
+        .btn-restart:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(118, 75, 162, 0.4);
+        }
+        
+        .start-screen {
+            text-align: center;
+            padding: 40px 0;
+        }
+        
+        .start-screen h2 {
+            color: #667eea;
+            font-size: 28px;
+            margin: 20px 0;
+        }
+        
+        .start-screen p {
+            color: #666;
+            font-size: 18px;
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+        
+        .start-emoji {
+            font-size: 80px;
+            margin: 20px 0;
+        }
+        
+        .btn-start {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px 50px;
+            font-size: 20px;
+            margin-top: 30px;
+        }
+        
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="snowflakes" id="snowflakes"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🎄 Какой ты персонаж на новогодних праздниках? 🎄</h1>
+            <p class="subtitle">Пройди тест и узнай свой праздничный типаж!</p>
+        </div>
+        
+        <div id="startScreen" class="start-screen">
+            <div class="start-emoji">🎅🎄🎁</div>
+            <h2>Готов узнать правду о себе?</h2>
+            <p>7 простых вопросов расскажут, кто ты на самом деле в новогодние каникулы!</p>
+            <p>Будь честен — результат может удивить 😄</p>
+            <button class="btn btn-start" onclick="startQuiz()">Начать тест! 🎉</button>
+        </div>
+        
+        <div id="quizContainer" style="display: none;">
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            
+            <div id="questionsContainer"></div>
+            
+            <div class="nav-buttons">
+                <button class="btn btn-prev" id="prevBtn" onclick="prevQuestion()" style="display: none;">← Назад</button>
+                <button class="btn btn-next" id="nextBtn" onclick="nextQuestion()" disabled>Далее →</button>
+            </div>
+        </div>
+        
+        <div id="resultContainer" class="result-container"></div>
+    </div>
+    
+    <script>
+        const questions = [
+            {
+                number: 1,
+                question: "Как ты просыпаешься 1 января?",
+                options: [
+                    { text: "В 6 утра от привычки. Тело не понимает, что можно спать", value: "A" },
+                    { text: "В 14:00. А что, разве уже день?", value: "B" },
+                    { text: "Просыпаюсь от запаха, который я сам готовлю с 8 утра", value: "C" },
+                    { text: 'В 11:00 от звонка мамы: "Ты жив? Приезжай, у нас гости!"', value: "D" }
+                ]
+            },
+            {
+                number: 2,
+                question: "Твоё главное занятие на каникулах?",
+                options: [
+                    { text: "Наконец-то займусь саморазвитием! (спойлер: не займусь)", value: "A" },
+                    { text: "Диван-сериалы-диван-сон. Идеальный цикл", value: "B" },
+                    { text: "Готовлю всё, что не успел за год. Моя кухня — шоу МasterChef", value: "C" },
+                    { text: "В гостях: у мамы, у бабушки, у друзей, у коллег. Я везде!", value: "D" }
+                ]
+            },
+            {
+                number: 3,
+                question: 'Сколько раз за праздники ты говоришь "С понедельника начну новую жизнь"?',
+                options: [
+                    { text: "10+ раз. И даже составил план. На салфетке. Которую потерял", value: "A" },
+                    { text: "0 раз. Какой понедельник? Какая жизнь? Разбудите меня в феврале", value: "B" },
+                    { text: "1 раз, но серьёзно. Уже купил всё для ЗОЖ (и съел)", value: "C" },
+                    { text: "3-5 раз, между визитами к родственникам. Но они продолжают кормить", value: "D" }
+                ]
+            },
+            {
+                number: 4,
+                question: "Твоё отношение к оливье на 5-й день каникул?",
+                options: [
+                    { text: 'Изучаю рецепты "как переделать оливье во что-то новое"', value: "A" },
+                    { text: "Оливье — это образ жизни. Ем на завтрак, обед и ужин", value: "B" },
+                    { text: "Сделал уже три вариации: классическое, с авокадо и веган-версию", value: "C" },
+                    { text: "Какое оливье? У каждой бабушки своё, я пробую все!", value: "D" }
+                ]
+            },
+            {
+                number: 5,
+                question: "Что ты делаешь в 23:55 в новогоднюю ночь?",
+                options: [
+                    { text: "Торопливо придумываю желание. Ещё не решил — карьера или любовь?", value: "A" },
+                    { text: "Досматриваю серию. Куранты подождут", value: "B" },
+                    { text: "Накрываю стол идеальной сервировкой. Салют? Позже!", value: "C" },
+                    { text: "Делаю селфи со всеми гостями для сторис", value: "D" }
+                ]
+            },
+            {
+                number: 6,
+                question: "Твой уровень социальной активности на каникулах:",
+                options: [
+                    { text: "Строю планы встретиться со всеми. Встречаюсь с диваном", value: "A" },
+                    { text: "Социум? Не, не слышал. Телефон на беззвучном", value: "B" },
+                    { text: "Зову всех на дегустацию моих кулинарных шедевров", value: "C" },
+                    { text: "Каждый день новые лица! Я социальная бабочка 🦋", value: "D" }
+                ]
+            },
+            {
+                number: 7,
+                question: "12 января, последний день каникул. Твои мысли?",
+                options: [
+                    { text: "Паника! Я ничего не успел сделать из списка!", value: "A" },
+                    { text: "Можно ещё один денёк? Ну пожалуйста...", value: "B" },
+                    { text: "Отлично отдохнул! Готов показать коллегам фото всех блюд", value: "C" },
+                    { text: "Устал как на работе. Надо отдохнуть от отдыха", value: "D" }
+                ]
+            }
+        ];
+        
+        const results = {
+            A: {
+                emoji: "📚",
+                title: "Прокрастинатор-мечтатель",
+                subtitle: "Планы громадье, реализация скромная",
+                description: `
+                    <p>Ты полон амбициозных планов! Выучить язык, прочитать 10 книг, начать бегать... Реальность: ты прочитал 3 страницы и заснул. Но главное — намерения были чистыми!</p>
+                    <p><strong>Твой девиз:</strong> "Завтра точно начну. Нет, послезавтра."</p>
+                    <p><strong>Плюсы:</strong> Всегда есть планы на будущее 📝</p>
+                    <p><strong>Минусы:</strong> Будущее никогда не наступает 😅</p>
+                `
+            },
+            B: {
+                emoji: "😴",
+                title: "Профессиональный сплюшка",
+                subtitle: "Мастер дивана и королевства сна",
+                description: `
+                    <p>Ты возвёл отдых в ранг искусства. Диван — твой храм, плед — священное одеяние. Режим: сон, еда, сериалы, снова сон. Ты заслужил эти каникулы!</p>
+                    <p><strong>Твой девиз:</strong> "Сон — лучшее лекарство от всего"</p>
+                    <p><strong>Плюсы:</strong> Максимально отдохнул 💤</p>
+                    <p><strong>Минусы:</strong> Не помнишь, какой сегодня день 🛋️</p>
+                `
+            },
+            C: {
+                emoji: "👨‍🍳",
+                title: "Шеф-маньяк",
+                subtitle: "Повелитель кастрюль и сковородок",
+                description: `
+                    <p>Твоя кухня не знала покоя! Ты приготовил всё от классики до авторских рецептов. Друзья и семья откатываются от стола, а ты уже планируешь меню на ужин.</p>
+                    <p><strong>Твой девиз:</strong> "Любовь приходит и уходит, а рецепт оливье — навсегда"</p>
+                    <p><strong>Плюсы:</strong> Все сыты и счастливы 🍳</p>
+                    <p><strong>Минусы:</strong> Посуды больше, чем в ресторане 🍽️</p>
+                `
+            },
+            D: {
+                emoji: "🎉",
+                title: "Социальная бабочка",
+                subtitle: "Душа компании и герой всех вечеринок",
+                description: `
+                    <p>Ты везде и со всеми! В гостях, на встречах, на вечеринках. Твой календарь расписан плотнее, чем рабочий график. Каникулы — это марафон общения!</p>
+                    <p><strong>Твой девиз:</strong> "Жизнь — это люди!" (и оливье у каждого разное)</p>
+                    <p><strong>Плюсы:</strong> Куча впечатлений и эмоций 🦋</p>
+                    <p><strong>Минусы:</strong> Нужен отпуск после отпуска 😴</p>
+                `
+            }
+        };
+        
+        let currentQuestion = 0;
+        let answers = [];
+        
+        function startQuiz() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('quizContainer').style.display = 'block';
+            renderQuestions();
+            updateProgress();
+        }
+        
+        function renderQuestions() {
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+            
+            questions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question-container';
+                if (index === currentQuestion) {
+                    questionDiv.classList.add('active');
+                }
+                
+                questionDiv.innerHTML = `
+                    <div class="question-number">Вопрос ${q.number} из ${questions.length}</div>
+                    <div class="question">${q.question}</div>
+                    <div class="options">
+                        ${q.options.map((opt, optIndex) => `
+                            <div class="option" onclick="selectOption(${index}, '${opt.value}', this)">
+                                <strong>${String.fromCharCode(65 + optIndex)})</strong> ${opt.text}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                container.appendChild(questionDiv);
+            });
+            
+            // Восстановить выбранные ответы
+            if (answers[currentQuestion]) {
+                const options = document.querySelectorAll('.question-container.active .option');
+                options.forEach(opt => {
+                    if (opt.textContent.includes(answers[currentQuestion])) {
+                        opt.classList.add('selected');
+                    }
+                });
+            }
+        }
+        
+        function selectOption(questionIndex, value, element) {
+            // Убрать выделение с других опций
+            const options = element.parentElement.children;
+            Array.from(options).forEach(opt => opt.classList.remove('selected'));
+            
+            // Выделить выбранную опцию
+            element.classList.add('selected');
+            
+            // Сохранить ответ
+            answers[questionIndex] = value;
+            
+            // Активировать кнопку "Далее"
+            document.getElementById('nextBtn').disabled = false;
+        }
+        
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                renderQuestions();
+                updateProgress();
+                updateButtons();
+            } else {
+                showResult();
+            }
+        }
+        
+        function prevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                renderQuestions();
+                updateProgress();
+                updateButtons();
+            }
+        }
+        
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+        
+        function updateButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.style.display = currentQuestion > 0 ? 'block' : 'none';
+            nextBtn.textContent = currentQuestion === questions.length - 1 ? 'Узнать результат! 🎉' : 'Далее →';
+            nextBtn.disabled = !answers[currentQuestion];
+        }
+        
+        function showResult() {
+            // Подсчитать результаты
+            const counts = { A: 0, B: 0, C: 0, D: 0 };
+            answers.forEach(answer => {
+                counts[answer]++;
+            });
+            
+            // Найти максимальное значение
+            const maxCount = Math.max(...Object.values(counts));
+            const resultKey = Object.keys(counts).find(key => counts[key] === maxCount);
+            
+            const result = results[resultKey];
+            
+            // Показать результат
+            document.getElementById('quizContainer').style.display = 'none';
+            const resultContainer = document.getElementById('resultContainer');
+            resultContainer.innerHTML = `
+                <div class="result-emoji">${result.emoji}</div>
+                <div class="result-title">${result.title}</div>
+                <div class="result-subtitle">${result.subtitle}</div>
+                <div class="result-description">
+                    ${result.description}
+                </div>
+                <div class="share-section">
+                    <h3>💬 Поделись результатом!</h3>
+                    <p>А ты какой персонаж? Напиши в комментариях! 😄</p>
+                </div>
+                <button class="btn btn-restart" onclick="restartQuiz()">🔄 Пройти тест заново</button>
+            `;
+            resultContainer.classList.add('active');
+        }
+        
+        function restartQuiz() {
+            currentQuestion = 0;
+            answers = [];
+            document.getElementById('resultContainer').classList.remove('active');
+            document.getElementById('startScreen').style.display = 'block';
+        }
+        
+        // Создание снежинок
+        const snowflakesContainer = document.getElementById('snowflakes');
+        for (let i = 0; i < 30; i++) {
+            const snowflake = document.createElement('div');
+            snowflake.className = 'snowflake';
+            snowflake.textContent = '❄';
+            snowflake.style.left = Math.random() * 100 + '%';
+            snowflake.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            snowflake.style.animationDelay = Math.random() * 5 + 's';
+            snowflake.style.fontSize = (Math.random() * 10 + 15) + 'px';
+            snowflakesContainer.appendChild(snowflake);
+        }
+        
+        // Инициализация кнопок
+        updateButtons();
+    </script>
+</body>
+</html>
